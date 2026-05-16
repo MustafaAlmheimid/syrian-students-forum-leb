@@ -397,32 +397,38 @@ function AboutPage() {
       name: 'وليد ريحاوي',
       role: 'منسق شؤون جامعية',
       image: '/images/team/walid.jpeg',
-      desc: 'يساعد الطلاب في متابعة المعادلات والتحويلات الجامعية.'
+      desc: 'مساعدة الطلاب في الجامعة وخصوصا الكليات الطبية'
     },  
     {
       name: 'عبدالبديع دشق',
       role: 'مشرف دعم طلابي',
       image: '/images/team/abedbadih.jpeg',
-      desc: 'يعمل على متابعة استفسارات الطلاب وتقديم الدعم المباشر.'
+      desc: 'يعمل على متابعة استفسارات الطلاب وتقديم الدعم المباشر بالاضافة لاختصاص الصيدلة.'
     },
     {
       name: 'زاهدة العابد',
       role: 'مسؤولة الإعلام والتواصل',
-      image: '/images/team/sara.jpg',
-      desc: 'تدير المحتوى الإعلامي والتوعية عبر منصات التواصل الاجتماعي.'
+      image: '/images/team/zahida.jpeg',
+      desc: 'علاقات مباشرة مع الطلاب بالاضافة منسق في سوريا'
     },
 
     {
       name: 'وئام الشاكوش',
-      role: 'منسقة النشاطات',
-      image: '/images/team/leen.jpg',
+      role: 'رئيسة الملتقى',
+      image: '/images/team/weam.jpeg',
       desc: 'تنظم المبادرات واللقاءات والأنشطة التعليمية للطلاب.'
     },
     {
       name: 'عمر سمعو',
+      role: 'مستشار أكاديمي ومطور تقني',
+      image: '/images/team/omar.jpeg',
+      desc: 'يقدم إرشادات أكاديمية حول الاختصاصات والجامعات خصوصا كلية الادارة والاقتصاد.'
+    },
+    {
+      name: 'عبد القادر',
       role: 'مستشار أكاديمي',
-      image: '/images/team/abdulrahman.jpg',
-      desc: 'يقدم إرشادات أكاديمية حول الاختصاصات والجامعات.'
+      image: '/images/team/abedelkader.jpeg',
+      desc: 'نائب الرئيس مسؤول عن الجامعات الخاصة'
     }
   ].map((member, index) => (
     <div
@@ -1285,8 +1291,8 @@ function Footer() {
   return (
     <footer className="border-t mt-16 py-12 bg-white text-sm text-gray-600">
       <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row gap-y-3 justify-between">
-        <div>© ملتقى الطلاب السوريين في لبنان — منصة رسمية</div>
-        <div>جميع الحقوق محفوظة ٢٠٢٥</div>
+        <div>© ملتقى الطلاب السوريين في لبنان — منصة رسمية بالتعاون مع سفارة الجمهورية العربية السورية في بيروت</div>
+        <div>جميع الحقوق محفوظة 2026</div>
       </div>
     </footer>
   );
