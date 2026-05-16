@@ -1,4 +1,6 @@
 #To Run : 
+npm install
+npm install -g vercel
 vercel dev
 
 # React + TypeScript + Vite
