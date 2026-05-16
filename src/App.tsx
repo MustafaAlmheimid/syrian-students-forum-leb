@@ -368,7 +368,7 @@ function AboutPage() {
       </div>
 
       <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
-        <img src="/images/about.jpg" alt="طلاب سوريون" className="w-full rounded-3xl mb-12 shadow" />
+        <img src="/images/team.jpeg" alt="طلاب سوريون" className="w-full rounded-3xl mb-12 shadow" />
         
         <p className="text-2xl font-light mb-12">تأسس ملتقى الطلاب السوريين في لبنان كمبادرة تطوعية تهدف إلى دعم الطلاب السوريين الذين يواجهون تحديات تعليمية وإدارية في لبنان.</p>
         
@@ -383,6 +383,72 @@ function AboutPage() {
         <h3 className="text-3xl font-semibold mt-14 mb-6">من المستفيدون؟</h3>
         <p>جميع الطلاب السوريين في لبنان من مرحلة الثانوية حتى الدراسات العليا، بالإضافة إلى العائلات السورية الباحثة عن فرص تعليمية لأبنائها.</p>
       </div>
+      <h3 className="text-3xl font-semibold mt-20 mb-10 text-center">أعضاء ملتقى الطلاب السوريين</h3>
+
+<div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+  {[
+    {
+      name: 'مصطفى المحيميد',
+      role: 'مطور ومشرف تقني',
+      image: '/images/team/mustafa.jpeg',
+      desc: 'يهتم بتطوير المنصة وإدارة الأنظمة التقنية ودعم الطلاب رقمياً.'
+    },
+    {
+      name: 'وليد ريحاوي',
+      role: 'منسق شؤون جامعية',
+      image: '/images/team/walid.jpeg',
+      desc: 'يساعد الطلاب في متابعة المعادلات والتحويلات الجامعية.'
+    },  
+    {
+      name: 'عبدالبديع دشق',
+      role: 'مشرف دعم طلابي',
+      image: '/images/team/abedbadih.jpeg',
+      desc: 'يعمل على متابعة استفسارات الطلاب وتقديم الدعم المباشر.'
+    },
+    {
+      name: 'زاهدة العابد',
+      role: 'مسؤولة الإعلام والتواصل',
+      image: '/images/team/sara.jpg',
+      desc: 'تدير المحتوى الإعلامي والتوعية عبر منصات التواصل الاجتماعي.'
+    },
+
+    {
+      name: 'وئام الشاكوش',
+      role: 'منسقة النشاطات',
+      image: '/images/team/leen.jpg',
+      desc: 'تنظم المبادرات واللقاءات والأنشطة التعليمية للطلاب.'
+    },
+    {
+      name: 'عمر سمعو',
+      role: 'مستشار أكاديمي',
+      image: '/images/team/abdulrahman.jpg',
+      desc: 'يقدم إرشادات أكاديمية حول الاختصاصات والجامعات.'
+    }
+  ].map((member, index) => (
+    <div
+      key={index}
+      className="bg-white border rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition duration-300"
+    >
+      <img
+        src={member.image}
+        alt={member.name}
+        className="w-full h-72 object-cover"
+      />
+
+      <div className="p-6">
+        <h4 className="text-2xl font-bold">{member.name}</h4>
+
+        <div className="text-emerald-700 text-sm mt-1 mb-4">
+          {member.role}
+        </div>
+
+        <p className="text-gray-600 leading-relaxed text-sm">
+          {member.desc}
+        </p>
+      </div>
+    </div>
+  ))}
+</div>
     </div>
   );
 }
