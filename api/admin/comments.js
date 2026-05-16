@@ -1,47 +1,75 @@
-import { createClient } from '@supabase/supabase-js';
+import Database from 'better-sqlite3';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const db = new Database('./database.sqlite');
 
-const supabaseAdmin = createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
-const supabase = createClient(supabaseUrl, anonKey);
+function verifyModeratorOrAdmin(req) {
+  const adminKey = req.headers['x-admin-key'];
 
-async function verifyModeratorOrAdmin(req) {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  if (!token) return { error: 'Unauthorized', status: 401 };
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  if (error || !user) return { error: 'Invalid token', status: 401 };
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-  if (!profile || !['admin', 'moderator'].includes(profile.role)) {
-    return { error: 'Moderator or Admin access required', status: 403 };
+  if (adminKey !== 'admin123') {
+    return {
+      error: 'Unauthorized',
+      status: 401
+    };
   }
-  return { user };
+
+  return { ok: true };
 }
 
 export default async function handler(req, res) {
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if (req.method === 'OPTIONS') return res.status(204).end();
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-key');
 
-  const authResult = await verifyModeratorOrAdmin(req);
-  if (authResult.error) return res.status(authResult.status).json({ error: authResult.error });
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  const auth = verifyModeratorOrAdmin(req);
+
+  if (auth.error) {
+    return res.status(auth.status).json({
+      error: auth.error
+    });
+  }
 
   try {
+
+    // GET COMMENTS
     if (req.method === 'GET') {
-      const { data, error } = await supabase.from('comments').select('*').order('created_at', { ascending: false });
-      if (error) throw error;
-      return res.status(200).json(data);
+
+      const comments = db.prepare(`
+        SELECT *
+        FROM comments
+        ORDER BY created_at DESC
+      `).all();
+
+      return res.status(200).json(comments);
     }
+
+    // DELETE COMMENT
     if (req.method === 'DELETE') {
+
       const { id } = req.body;
-      const { error } = await supabase.from('comments').delete().eq('id', id);
-      if (error) throw error;
-      return res.status(200).json({ ok: true });
+
+      db.prepare(`
+        DELETE FROM comments
+        WHERE id = ?
+      `).run(id);
+
+      return res.status(200).json({
+        ok: true
+      });
     }
-    res.status(405).json({ error: 'Method not allowed' });
+
+    return res.status(405).json({
+      error: 'Method not allowed'
+    });
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    return res.status(500).json({
+      error: err.message
+    });
   }
 }

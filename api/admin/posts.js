@@ -1,59 +1,145 @@
-import { createClient } from '@supabase/supabase-js';
+import Database from 'better-sqlite3';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const db = new Database('./database.sqlite');
 
-const supabaseAdmin = createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
-const supabase = createClient(supabaseUrl, anonKey);
+function verifyModeratorOrAdmin(req) {
+  const adminKey = req.headers['x-admin-key'];
 
-async function verifyModeratorOrAdmin(req) {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  if (!token) return { error: 'Unauthorized', status: 401 };
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  if (error || !user) return { error: 'Invalid token', status: 401 };
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-  if (!profile || !['admin', 'moderator'].includes(profile.role)) {
-    return { error: 'Moderator or Admin access required', status: 403 };
+  if (adminKey !== 'admin123') {
+    return {
+      error: 'Unauthorized',
+      status: 401
+    };
   }
-  return { user };
+
+  return { ok: true };
 }
 
 export default async function handler(req, res) {
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if (req.method === 'OPTIONS') return res.status(204).end();
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-key');
 
-  const authResult = await verifyModeratorOrAdmin(req);
-  if (authResult.error) return res.status(authResult.status).json({ error: authResult.error });
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  const auth = verifyModeratorOrAdmin(req);
+
+  if (auth.error) {
+    return res.status(auth.status).json({
+      error: auth.error
+    });
+  }
 
   try {
+
+    // GET POSTS
     if (req.method === 'GET') {
-      const { data, error } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
-      if (error) throw error;
-      return res.status(200).json(data);
+
+      const posts = db.prepare(`
+        SELECT *
+        FROM posts
+        ORDER BY created_at DESC
+      `).all();
+
+      return res.status(200).json(posts);
     }
+
+    // CREATE POST
     if (req.method === 'POST') {
-      const { title, content, category } = req.body;
-      const { data, error } = await supabase.from('posts').insert({ title, content, category, published: true }).select().single();
-      if (error) throw error;
-      return res.status(201).json(data);
+
+      const {
+        title,
+        content,
+        category
+      } = req.body;
+
+      const result = db.prepare(`
+        INSERT INTO posts (
+          title,
+          content,
+          category,
+          published,
+          created_at
+        )
+        VALUES (?, ?, ?, ?, datetime('now'))
+      `).run(
+        title,
+        content,
+        category,
+        1
+      );
+
+      const post = db.prepare(`
+        SELECT *
+        FROM posts
+        WHERE id = ?
+      `).get(result.lastInsertRowid);
+
+      return res.status(201).json(post);
     }
+
+    // UPDATE POST
     if (req.method === 'PUT') {
-      const { id, title, content, category, published } = req.body;
-      const { data, error } = await supabase.from('posts').update({ title, content, category, published }).eq('id', id).select().single();
-      if (error) throw error;
-      return res.status(200).json(data);
+
+      const {
+        id,
+        title,
+        content,
+        category,
+        published
+      } = req.body;
+
+      db.prepare(`
+        UPDATE posts
+        SET
+          title = ?,
+          content = ?,
+          category = ?,
+          published = ?
+        WHERE id = ?
+      `).run(
+        title,
+        content,
+        category,
+        published ? 1 : 0,
+        id
+      );
+
+      const updatedPost = db.prepare(`
+        SELECT *
+        FROM posts
+        WHERE id = ?
+      `).get(id);
+
+      return res.status(200).json(updatedPost);
     }
+
+    // DELETE POST
     if (req.method === 'DELETE') {
+
       const { id } = req.body;
-      const { error } = await supabase.from('posts').delete().eq('id', id);
-      if (error) throw error;
-      return res.status(200).json({ ok: true });
+
+      db.prepare(`
+        DELETE FROM posts
+        WHERE id = ?
+      `).run(id);
+
+      return res.status(200).json({
+        ok: true
+      });
     }
-    res.status(405).json({ error: 'Method not allowed' });
+
+    return res.status(405).json({
+      error: 'Method not allowed'
+    });
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    return res.status(500).json({
+      error: err.message
+    });
   }
 }

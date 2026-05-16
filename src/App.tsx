@@ -825,9 +825,11 @@ function AdminPage({ user, isAdmin, userRole }: { user: User | null; isAdmin: bo
   const [newPost, setNewPost] = useState({ title: '', content: '', category: CATEGORIES[0] });
 
   const getAuthHeaders = async () => {
-    return { 'Content-Type': 'application/json' };
+    return {
+      'Content-Type': 'application/json',
+      'x-admin-key': 'admin123'
+    };
   };
-
   const fetchAllData = async () => {
     setLoadingData(true);
     const headers = await getAuthHeaders();
